@@ -18,7 +18,8 @@ SRCS = \
 	$(SRC_DIR)/lexer/lexer.c \
 	$(SRC_DIR)/lexer/lexer_utils.c \
 	$(SRC_DIR)/lexer/lexer_operators.c \
-	$(SRC_DIR)/lexer/lexer_words.c \
+	$(SRC_DIR)/lexer/lexer_helper.c \
+	$(SRC_DIR)/lexer/lexer_super_word.c \
 	$(SRC_DIR)/parser/parser.c \
 	$(SRC_DIR)/parser/command.c \
 	$(SRC_DIR)/parser/command_list.c \

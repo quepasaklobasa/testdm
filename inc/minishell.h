@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: airupert <airupert@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:28 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/20 17:16:40 by airupert         ###   ########.fr       */
+/*   Updated: 2025/07/28 19:35:41 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,15 +114,15 @@ TokenNode *lexer(char *input);
 void lexer_operator_type(char *input, int *i, TokenType *type, int *inc);
 TokenNode *lexer_operator_value(TokenNode *tokens, int count, TokenType type);
 
-// src/lexer/lexer_words.c
-TokenNode *lexer_word(char *input, int *i, int *count, TokenNode *tokens);
+// src/lexer/lexer_super_words.c
+TokenNode *lexer_word_combined(char *input, int *i, int *count, TokenNode *tokens);
 int lexer_classify(char *input, int i);
 TokenNode *lexer_variable(char *input, int *i, int *count, TokenNode *tokens);
 
 // src/lexer/lexer_utils.c
 void free_tokens(TokenNode *tokens);
 TokenNode *append_token(TokenNode *tokens, Token token);
-TokenNode *lexer_process(char *input, int *i, int *count, TokenNode *tokens);
+
 
 // src/parser/parser.c
 int consume(TokenType type);

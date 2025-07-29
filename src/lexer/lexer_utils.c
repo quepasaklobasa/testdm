@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 15:16:58 by jcouto            #+#    #+#             */
-/*   Updated: 2025/05/27 16:06:55 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/07/28 19:09:55 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,23 +51,5 @@ TokenNode *append_token(TokenNode *tokens, Token token)
     while (current->next)
         current = current->next;
     current->next = new_node;
-    return (tokens);
-}
-
-// Process tokens for lexer
-TokenNode *lexer_process(char *input, int *i, int *count, TokenNode *tokens)
-{
-    int type;
-    type = lexer_classify(input, *i);
-    if (type == 0)
-        tokens = lexer_word(input, i, count, tokens);
-    else if (type == 1)
-        tokens = lexer_operator(input, i, count, tokens);
-    else if (type == 2)
-        tokens = lexer_single_quote(input, i, count, tokens);
-    else if (type == 3)
-        tokens = lexer_double_quote(input, i, count, tokens);
-    else if (type == 4)
-        tokens = lexer_variable(input, i, count, tokens);
     return (tokens);
 }

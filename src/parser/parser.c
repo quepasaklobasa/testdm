@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 13:19:50 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/24 21:05:19 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/07/25 19:34:15 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ char **parse_args_process(char **args, int *arg_count, t_context *ctx)
 			{
 				while(i > 0)
 					free(args[--i]);
-				return (NULL);
+				free(args);
 			}
 			i++;
 		}
