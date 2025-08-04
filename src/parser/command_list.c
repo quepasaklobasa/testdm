@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command_list.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: airupert <airupert@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 19:31:50 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/20 15:31:13 by airupert         ###   ########.fr       */
+/*   Updated: 2025/07/31 20:40:39 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,23 +56,8 @@ CommandList *parse_program(TokenNode *token_stream, t_context *ctx)
     g_tokens = token_stream;
     g_current_token = token_stream;
     list = init_command_list(ctx);
-	char	*path;
     if (!list)
         return (NULL);
-    // validate command checker (check for non-empty cmd)
-    if (list->cmd->cmd && !is_builtin(list->cmd->cmd))
-    {
-		path = get_command_path(list->cmd->cmd, ctx);
-		if (!path)
-		{
-			write(2, "minishell: command not found: ", 30);
-			write(2, list->cmd->cmd, ft_strlen(list->cmd->cmd));
-			write(2, "\n", 1);
-			free_command_list(list);
-			return (NULL);
-		}
-		free(path);
-    }
     list = handle_pipe(list, ctx); // removed token stream
     if (!list)
         return (NULL);

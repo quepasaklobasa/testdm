@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 18:48:25 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/28 19:41:22 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/07/29 19:44:20 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ static char *read_single_quote_fragment(const char *input, int *i)
 	while (input[*i] && input[*i] != '\'')
 		(*i)++;
 	if (!input[*i])
-		return (NULL); // syntax error: unclosed '
+		return (printf("unclosed single quote"), NULL); // syntax error: unclosed '
 	frag = ft_substr(input, start, *i - start);
 	(*i)++; // skip closing '
 	return (frag);
@@ -43,7 +43,7 @@ static char *read_double_quote_fragment(const char *input, int *i)
 	while (input[*i] && input[*i] != '"')
 		(*i)++;
 	if (!input[*i])
-		return (NULL); // syntax error: unclosed "
+		return (printf("unclosed double quote"), NULL); // syntax error: unclosed "
 	frag = ft_substr(input, start, *i - start);
 	(*i)++; // skip closing "
 	return (frag);
@@ -59,7 +59,7 @@ static char *read_plain_fragment(char *input, int *i)
 		   lexer_classify(input, *i) == 0)
 		(*i)++;
 	if (*i == start)
-		return (NULL);
+		return (ft_strdup("")); 
 	return ft_substr(input, start, *i - start);
 }
 
@@ -68,7 +68,7 @@ TokenNode *lexer_word_combined(char *input, int *i, int *count, TokenNode *token
 	char *buffer = ft_calloc(1, 1);
 	char *frag;
 
-	while (input[*i] && lexer_classify(input, *i) == 0)
+	while (input[*i] && lexer_classify(input, *i) != -1 && lexer_classify(input, *i) != 1)
 	{
 		if (input[*i] == '\'')
 			frag = read_single_quote_fragment(input, i);

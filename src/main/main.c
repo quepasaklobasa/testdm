@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: airupert <airupert@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:32 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/21 16:45:38 by airupert         ###   ########.fr       */
+/*   Updated: 2025/07/29 19:56:09 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,11 @@ void process_input(char *line, t_shell *shell)
 	
 	i = 0;
     tokens = lexer(line);
+    if (!tokens)
+    {
+		ctx.exit_status = 2; //patches segfault on unclosed quotes
+		return;
+    }
     ctx.pipefd = NULL;
     // ctx.env = shell->env; // removed from original to solve ctx->env update issue
     // ctx.exit_status = 0;

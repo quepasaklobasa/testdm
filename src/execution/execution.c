@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 19:33:29 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/24 20:15:39 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/07/31 20:43:12 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ int execute_command_list(CommandList *cmd_list, t_context *ctx, t_shell *shell)
 	pid_t	pids[100]; // Array to store PIds (!this can be made dynamic for later if needed!)
 	int		prev_fd = STDIN_FILENO; // tracks read end of previous pipe
 	int		pid_count = 0; // Counter for PIDS
-	char	*path;
 	int		i;
 
 	if (!cmd_list || !ctx || !shell)
@@ -62,23 +61,9 @@ int execute_command_list(CommandList *cmd_list, t_context *ctx, t_shell *shell)
     current = cmd_list;
     while (current)
     {
-		// Validate command before fork
-		if (!is_builtin(current->cmd->cmd))
-		{
-			path = get_command_path(current->cmd->cmd, ctx);
-			if (!path)
-			{
-				write(STDERR_FILENO, "minishell: command not found: ", 30);
-				write(STDERR_FILENO, current->cmd->cmd, ft_strlen(current->cmd->cmd));
-				write(STDERR_FILENO, "\n", 1);
-				// close previous pipe read end if open
-				if (prev_fd != STDIN_FILENO)
-					close(prev_fd);
-				ctx->exit_status = 127;
-				return (127);
-			}
-			free(path);
-		}
+		// Remove command validation from here - let the child process handle it
+		// This allows the pipeline to be set up properly even if a command fails
+		
 		// Check if a pipe is needed (if there is a next command)
 		if (current->next)
 		{
@@ -123,7 +108,7 @@ int execute_command_list(CommandList *cmd_list, t_context *ctx, t_shell *shell)
 				close(pipefd[1]);
 			}
 			printf("DEBUG: Child process: setting up fds for cmd=%s\n", current->cmd->cmd);
-			setup_fds(current->cmd, ctx); //setup_fds is nor a child process
+			setup_fds(current->cmd, ctx); //setup_fds is now a child process
 			result = execute_single_command(current->cmd, ctx, shell);
 			exit(result);
 		}
