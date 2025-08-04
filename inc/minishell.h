@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:28 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/28 19:35:41 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/04 20:57:55 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,7 @@ int exec_builtin(Command *cmd, t_context *ctx, t_shell *shell); // added t_shell
 
 // src/builtins/builtin_utils.c
 int		update_env(t_context *ctx, const char *var);
-int		remove_env(t_context *ctx, const char *name);
+void	remove_env(t_context *ctx, const char *name);
 int		is_numeric(const char *str);
 int		is_valid_identifier(const char *str);
 char    *get_env_value(char **env, const char *name);

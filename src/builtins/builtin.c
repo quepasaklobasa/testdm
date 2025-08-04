@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtin.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: airupert <airupert@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:34:10 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/21 16:56:13 by airupert         ###   ########.fr       */
+/*   Updated: 2025/08/04 20:40:55 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,23 +46,17 @@ static int	cmd_env(Command *cmd, t_context *ctx)
 {
 	int	i;
 
-	if (!ctx)
+	if (!ctx || !ctx->env)
 	{
 		write(STDERR_FILENO, "minishell: env: invalid identifier\n", 31);
-		return (1);
+		return ((ctx->exit_status = 1), 1);
 	}
 	if (cmd->args[1])
 	{
 		write(STDERR_FILENO, "minishell: env: no options or arguments allowed\n", 48);
-		ctx->exit_status = 1;
-		return (1);
+		return ((ctx->exit_status = 1), 1);
 	}
 	i = 0;
-	if (!ctx->env)
-	{
-		ctx->exit_status = 0;
-		return (0);
-	}
 	while (ctx->env[i])
 	{
 		write(cmd->out_fd, ctx->env[i], ft_strlen(ctx->env[i]));
@@ -76,17 +70,22 @@ static int	cmd_env(Command *cmd, t_context *ctx)
 static int	cmd_unset(Command *cmd, t_context *ctx)
 {
 	int	i;
-	int	error;
-
+	int	error = 0;
+	
+	if (!cmd->args[1]) // unset with no arguments is valid in bash - just does nothing
+		return ((ctx->exit_status = 0), 0);
 	i = 1;
 	while (cmd->args[i])
-	{
-		if (remove_env(ctx, cmd->args[i])) // builtin helper function
+	{		// Check if it's a valid identifier first
+		if (!is_valid_identifier(cmd->args[i]))
 		{
-			write(STDERR_FILENO, "minishell: unset: invalid identifier\n", 37);
-			ctx->exit_status = 1;
+			write(STDERR_FILENO, "minishell: unset: `", 19);
+			write(STDERR_FILENO, cmd->args[i], ft_strlen(cmd->args[i]));
+			write(STDERR_FILENO, "': not a valid identifier\n", 26);
 			error = 1;
 		}
+		else	// remove_env now returns 0 on success, 1 on error
+			remove_env(ctx, cmd->args[i]);
 		i++;
 	}
 	ctx->exit_status = error;
@@ -100,22 +99,15 @@ static int	cmd_export(Command *cmd, t_context *ctx)
 
 	error = 0;
 	if (!ctx || !cmd)
-	{
-		write(STDERR_FILENO, "minishell: export: invalid context\n", 34);
-		if (ctx)
-			ctx->exit_status = 1;
-		return (1);
-	}
+		return ((write(STDERR_FILENO, "minishell: export: invalid context\n", 34)), 1);
 	if (!cmd->args[1])
 	{
 		if (!ctx->env)
-		{
-			ctx->exit_status = 0;
-			return (0);
-		}
+			return ((ctx->exit_status = 0), 0);
 		i = 0;
 		while (ctx->env[i])
 		{
+			write(cmd->out_fd, "declare -x ", 11); //debug?
 			write(cmd->out_fd, ctx->env[i], ft_strlen(ctx->env[i]));
 			write(cmd->out_fd, "\n", 1);
 			i++;
@@ -256,10 +248,7 @@ int exec_builtin(Command *cmd, t_context *ctx, t_shell *shell) // t_shell added 
 	else if (ft_strcmp(cmd->cmd, "cd") == 0)
 		return (cmd_cd(cmd, ctx));
 	else if (ft_strcmp(cmd->cmd, "pwd") == 0)
-	{
-		cmd_pwd(cmd, ctx);
-		return(ctx->exit_status);
-	}
+		return(cmd_pwd(cmd, ctx));
 	else if (ft_strcmp(cmd->cmd, "export") == 0)
 		return (cmd_export(cmd, ctx));
 	else if (ft_strcmp(cmd->cmd, "unset") == 0)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtin_utils.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: airupert <airupert@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/27 13:36:54 by airupert          #+#    #+#             */
-/*   Updated: 2025/07/01 13:51:09 by airupert         ###   ########.fr       */
+/*   Updated: 2025/08/04 20:59:11 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,19 +14,19 @@
 
 // utils used for the builtin functions that will be used for the project
 
-static void	free_str_array(char **arr, int count)
+static void	free_env_array(char **env)
 {
 	int	i;
 
-	i = 0;
-	if (!arr)
+	if (!env)
 		return ;
-	while (i < count && arr[i])
+	i = 0;
+		while (env[i])
 	{
-		free(arr[i]);
+		free(env[i]);
 		i++;
 	}
-	free(arr);
+	free(env);
 }
 
 // check if string is numeric
@@ -79,22 +79,19 @@ int	update_env(t_context *ctx, const char *var)
 		i++;
 	}
 	// add new variable
-	env_count = 0;
-	while (ctx->env[env_count])
-		env_count++;
+	env_count = i;
 	new_env = ft_calloc(env_count + 2, sizeof(char *));
 	if (!new_env)
-	{
-		free(name);
-		return (0);
-	}
+		return (free(name), 0);
+	while (ctx->env[env_count])
+		env_count++;
 	i = 0;
 	while (i < env_count)
 	{
 		new_env[i] = ft_strdup(ctx->env[i]);
 		if (!new_env[i])
 		{
-			free_str_array(new_env, i);
+			free_env_array(new_env);
 			free(name);
 			return (0);
 		}
@@ -103,11 +100,11 @@ int	update_env(t_context *ctx, const char *var)
 	new_env[env_count] = ft_strdup(var);
 	if (!new_env[env_count])
 	{
-		free_str_array(new_env, env_count);
+		free_env_array(new_env);
 		free(name);
 		return (0);
 	}
-	free_str_array(ctx->env, env_count);
+	free_env_array(ctx->env);
 	ctx->env = new_env;
 	free(name);
 	return (1);
@@ -133,18 +130,19 @@ int 	is_valid_identifier(const char *str)
 }
 
 // remove an enviornment variable
-int	remove_env(t_context *ctx, const char *name)
+void	remove_env(t_context *ctx, const char *name)
 {
-	if (!name || !*name || !ctx || !ctx->env)
-		return (0);
-	int	env_count = 0;
-	while (ctx->env[env_count])
-		env_count++;
+	int	i;
 	int found = -1;
-	int	i = 0;
+	size_t name_len;
+	
+	if (!name || !*name || !ctx || !ctx->env)
+		return ;
+	name_len = ft_strlen(name);
+	i = 0;
 	while (ctx->env[i])
 	{
-		if (ft_strncmp(ctx->env[i], name, ft_strlen(name)) == 0 && (ctx->env[i][ft_strlen(name)] == '=' || ctx->env[i][ft_strlen(name)] == '\0'))
+		if (ft_strncmp(ctx->env[i], name, name_len) == 0 && (ctx->env[i][name_len] == '=' || ctx->env[i][name_len] == '\0'))
 		{
 			found = i;
 			break;
@@ -152,16 +150,14 @@ int	remove_env(t_context *ctx, const char *name)
 		i++;
 	}
 	if (found == -1)
-		return (1); // variable not found, no error
+		return ; // variable not found, no error
 	free(ctx->env[found]);
-	i = found;
-	while(i < env_count - 1)
+	while (ctx->env[found + 1])
 	{
-		ctx->env[i] = ctx->env[i + 1];
-		i++;
+		ctx->env[found] = ctx->env[found + 1];
+		found++;
 	}
-	ctx->env[env_count - 1] = NULL;
-	return (1);
+	ctx->env[found] = NULL;
 }
 
 // helper to retrieve the value of an env variable
