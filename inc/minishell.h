@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:28 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/04 20:57:55 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/05 21:13:13 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,12 +84,6 @@ typedef struct s_command {
     int out_fd;             // Output file descriptor
     int pid;                // Process ID
 } Command;
-
-// POSSIBLE! Future argument linked list
-// typedef struct s_args {
-//     char *data;
-//     struct s_args *next;
-// } t_args;
 
 typedef struct s_command_list {
     Command *cmd;
