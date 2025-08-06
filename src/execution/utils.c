@@ -6,14 +6,14 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:34:39 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/24 20:34:59 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/06 21:03:22 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../inc/minishell.h"
 
 // handle heredoc redirection
-static int	handle_heredoc(Command *cmd, t_context *ctx)
+static int	handle_heredoc(Command *cmd, t_shell *shell)
 {
 	int		pipefd[2];
 	char	*line;
@@ -21,16 +21,14 @@ static int	handle_heredoc(Command *cmd, t_context *ctx)
 
 	if (!cmd->heredoc_delim)
 		return (0);
-
 	// create a pipe to store heredoc input
 	if (pipe(pipefd) == -1)
 	{
 		write(STDERR_FILENO, "minishell: warning: heredoc delimited by EOF\n", 45);
-		ctx->exit_status = 1;
+		shell->exit_status = 1;
 		return (-1);
 	}
 	delim_len = ft_strlen(cmd->heredoc_delim);
-	
 	// red input until delimiter is found
 	while (1)
 	{
@@ -49,7 +47,7 @@ static int	handle_heredoc(Command *cmd, t_context *ctx)
 			free(line);
 			close(pipefd[1]);
 			close(pipefd[0]);
-			ctx->exit_status = 128 + SIGINT;
+			shell->exit_status = 128 + SIGINT;
 			g_signal = 0;
 			return (-1);
 		}
@@ -64,22 +62,18 @@ static int	handle_heredoc(Command *cmd, t_context *ctx)
 			free(line);
 			close(pipefd[1]);
 			close(pipefd[0]);
-			ctx->exit_status = 1;
+			shell->exit_status = 1;
 			return (-1);
 		}
 		free(line);
 	}
-	// write(pipefd[1], line, ft_strlen(line)); // close write end
-	// write(pipefd[1], "\n", 1); // add newline as in bash
-	// free(line);
 	close(pipefd[1]); // close write end
 	cmd->in_fd = pipefd[0]; // set read end for command input
-	ctx->exit_status = 0;
+	shell->exit_status = 0;
 	return (0);
 }
-
 // Setup file descriptors for command
-void setup_fds(Command *cmd, t_context *ctx)
+void setup_fds(Command *cmd, t_shell *shell)
 {
 	int		fd;
 
@@ -90,7 +84,7 @@ void setup_fds(Command *cmd, t_context *ctx)
     // handle heredoc redirection
     if (cmd->heredoc_delim)
 	{
-		if (handle_heredoc(cmd, ctx) == -1)
+		if (handle_heredoc(cmd, shell) == -1)
 			return ;
 	}
 	// handle input redirection
@@ -102,7 +96,7 @@ void setup_fds(Command *cmd, t_context *ctx)
 			write(STDERR_FILENO, "minishell: ", 11);
 			write(STDERR_FILENO, cmd->redirect_in, ft_strlen(cmd->redirect_in));
 			write(STDERR_FILENO, ": No such file or directory\n", 28);
-			ctx->exit_status = 1;
+			shell->exit_status = 1;
 			return ;
 		}
 		if (cmd->in_fd != STDIN_FILENO)
@@ -118,7 +112,7 @@ void setup_fds(Command *cmd, t_context *ctx)
 			write(STDERR_FILENO, "minishell: ", 11);
 			write(STDERR_FILENO, cmd->redirect_out, ft_strlen(cmd->redirect_out));
 			write(STDERR_FILENO, ": Permission denied\n", 20);
-			ctx->exit_status = 1;
+			shell->exit_status = 1;
 			return ;
 		}
 		if (cmd->out_fd != STDOUT_FILENO)
@@ -134,7 +128,7 @@ void setup_fds(Command *cmd, t_context *ctx)
 			write(STDERR_FILENO, "minishell: ", 11);
 			write(STDERR_FILENO, cmd->redirect_append, ft_strlen(cmd->redirect_append));
 			write(STDERR_FILENO, ": Permission denied\n", 20);
-			ctx->exit_status = 1;
+			shell->exit_status = 1;
 			return ;
 		}
 		if (cmd->out_fd != STDOUT_FILENO)
@@ -147,7 +141,7 @@ void setup_fds(Command *cmd, t_context *ctx)
 		if (dup2(cmd->in_fd, STDIN_FILENO) == -1)
 		{
 			write(STDERR_FILENO, "minishell: dup2: cannot duplicate file descriptor\n", 50);
-			ctx->exit_status = 1;
+			shell->exit_status = 1;
 			return ;
 		}
 		close(cmd->in_fd);
@@ -158,7 +152,7 @@ void setup_fds(Command *cmd, t_context *ctx)
 		if (dup2(cmd->out_fd, STDOUT_FILENO) == -1)
 		{
 			write(STDERR_FILENO, "minishell: dup2: cannot duplicate file descriptor\n", 50);
-			ctx->exit_status = 1;
+			shell->exit_status = 1;
 			return ;
 		}
 		close(cmd->out_fd);

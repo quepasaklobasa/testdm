@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   external.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: airupert <airupert@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:36:08 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/22 20:27:13 by airupert         ###   ########.fr       */
+/*   Updated: 2025/08/06 20:56:11 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../inc/minishell.h"
 
 // Get path for external command
-char *get_command_path(const char *cmd, t_context *ctx)
+char *get_command_path(const char *cmd, t_shell *shell)
 {
     char	*path;
 	char	*paths;
@@ -23,14 +23,12 @@ char *get_command_path(const char *cmd, t_context *ctx)
 
 	if (!cmd)
 	{
-		{
-			write(2, "minishell: get_command_path: null command\n", 41);
-			return (NULL);
-		}
+		write(2, "minishell: get_command_path: null command\n", 41);
+		return (NULL);
 	}
 	if (access(cmd, X_OK) == 0)
 		return (ft_strdup(cmd));
-	path_env = get_env_value(ctx->env, "PATH");
+	path_env = get_env_value(shell->env, "PATH");
 	if (!path_env)
 	{
 		// fallback to /bin/ if PATH is unset
@@ -76,30 +74,30 @@ char *get_command_path(const char *cmd, t_context *ctx)
 }
 
 // Execute external command
-int exec_external(Command *cmd, t_context *ctx)
+int exec_external(Command *cmd, t_shell *shell)
 {
     char *path;
 
 	if (!cmd || !cmd->cmd || !cmd->args)
 	{
 		write(STDERR_FILENO, "minishell: exec_external: invalid command\n", 41);
-		ctx->exit_status = 1;
+		shell->exit_status = 1;
 		return (1);
 	}
-    path = get_command_path(cmd->cmd, ctx);
+    path = get_command_path(cmd->cmd, shell);
     if (!path)
     {
 		write(STDERR_FILENO, "minishell: command not found: ", 30);
 		write(STDERR_FILENO, cmd->cmd, ft_strlen(cmd->cmd));
 		write(STDERR_FILENO, "\n", 1);
-        ctx->exit_status = 127;
+        shell->exit_status = 127;
         return (127);
     }
-	execve(path, cmd->args, ctx->env);
+	execve(path, cmd->args, shell->env);
 	write(STDERR_FILENO, "minishell: command not found: ", 30);
 	write(STDERR_FILENO, cmd->cmd, ft_strlen(cmd->cmd));
 	write(STDERR_FILENO, "\n", 1);
     free(path);
-    ctx->exit_status = 127;
+    shell->exit_status = 127;
 	return (127);
 }

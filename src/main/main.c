@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:32 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/04 21:03:16 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/06 21:15:52 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,74 +77,30 @@ void process_input(char *line, t_shell *shell)
 {
 	TokenNode	*tokens;
     CommandList	*cmd_list;
-    t_context	ctx;
-	int			i;
-	
-	i = 0;
+
     tokens = lexer(line);
     if (!tokens)
     {
-		ctx.exit_status = 2; //patches segfault on unclosed quotes
+		shell->exit_status = 2; //patches segfault on unclosed quotes
 		return;
     }
-    ctx.pipefd = NULL;
-    // ctx.env = shell->env; // removed from original to solve ctx->env update issue
-    // ctx.exit_status = 0;
-	// copy shell->env to ctx.env
-	while (shell->env && shell->env[i])
-		i++;
-	ctx.env = ft_calloc(i + 1, sizeof(char *));
-	if (!ctx.env)
-	{
-		free_tokens(tokens);
-		return ;
-	}
-	i = 0;
-	while (shell->env && shell->env[i])
-	{
-		ctx.env[i] = ft_strdup(shell->env[i]);
-		if (!ctx.env[i])
-		{
-			while (i > 0)
-				free(ctx.env[--i]);
-			free(ctx.env);
-			free_tokens(tokens);
-			return ;
-		}
-		i++;
-	}
-	ctx.exit_status = shell->exit_status;
+    printf("DEBUG: shell->env before parsing:\n");
+    for (int i = 0; shell->env[i]; i++)
+        printf("  [%d]: %s\n", i, shell->env[i]);
     printf("Tokens:\n");
     print_tokens(tokens);
-    cmd_list = parse_program(tokens, &ctx);
+    cmd_list = parse_program(tokens, shell);
     if (cmd_list)
     {
         print_command_list(cmd_list);
-        execute_command_list(cmd_list, &ctx, shell);
-		shell->exit_status = ctx.exit_status;
-		if (shell->env)
-		{
-			i = 0;
-			while (shell->env[i])
-				free(shell->env[i++]);
-			free(shell->env);
-		}
-		shell->env = ctx.env;
-		ctx.env = NULL; // prevent double-free
+        execute_command_list(cmd_list, shell);
+		printf("DEBUG: shell->env after command:\n");
+        for (int i = 0; shell->env[i]; i++)
+            printf("  [%d]: %s\n", i, shell->env[i]);
         free_command_list(cmd_list);
     }
 	else
-	{
-		// clean up ctx.env if parsing failed
-		if (ctx.env)
-		{
-			i = 0;
-			while (ctx.env[i])
-				free(ctx.env[i++]);
-			free(ctx.env);
-		}
 		shell->exit_status = 1;
-	}
     free_tokens(tokens);
 }
 

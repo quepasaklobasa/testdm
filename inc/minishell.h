@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:28 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/05 21:13:13 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/06 20:10:46 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ typedef struct s_shell {
     char    **env;
 	int		exit_status;
     volatile sig_atomic_t exit_flag;
+    int     pipefd[2];
+    int     prev_fd;
 } t_shell;
 
 typedef enum { //Token types for lexer
@@ -65,13 +67,6 @@ typedef struct s_token_node {
 // Parser globals
 extern TokenNode *g_tokens;
 extern TokenNode *g_current_token;
-
-// Context for execution
-typedef struct s_context {
-    int *pipefd;            // Pipe file descriptors
-    char **env;             // Environment variables
-    int exit_status;        // Last command exit status
-} t_context;
 
 typedef struct s_command {
     char *cmd;              // Command name (e.g., "echo")
@@ -117,52 +112,51 @@ TokenNode *lexer_variable(char *input, int *i, int *count, TokenNode *tokens);
 void free_tokens(TokenNode *tokens);
 TokenNode *append_token(TokenNode *tokens, Token token);
 
-
 // src/parser/parser.c
 int consume(TokenType type);
 char **parse_args_alloc(int *arg_count);
-char **parse_args_process(char **args, int *arg_count, t_context *ctx);
-char **parse_args(int *arg_count, t_context *ctx);
+char **parse_args_process(char **args, int *arg_count, t_shell *shell);
+char **parse_args(int *arg_count, t_shell *shell);
 int parse_redirection_type(Command *cmd, TokenType type);
 
 // src/parser/command.c
 int parse_redirection(Command *cmd);
 Command *parse_command_init(void);
-Command *parse_command_args(Command *cmd, int *arg_count, t_context *ctx);
-Command *parse_command(t_context *ctx);
+Command *parse_command_args(Command *cmd, int *arg_count, t_shell *shell);
+Command *parse_command(t_shell *shell);
 void free_command(Command *cmd);
 
 // src/parser/command_list.c
-CommandList *init_command_list(t_context *ctx);
-CommandList *handle_pipe(CommandList *list, t_context *ctx); // removed token stream argument
-CommandList *parse_program(TokenNode *token_stream, t_context *ctx);
-CommandList *parse_command_list(t_context *ctx);
+CommandList *init_command_list(t_shell *shell);
+CommandList *handle_pipe(CommandList *list, t_shell *shell); // removed token stream argument
+CommandList *parse_program(TokenNode *token_stream, t_shell *shell);
+CommandList *parse_command_list(t_shell *shell);
 void free_command_list(CommandList *list);
 
 // src/execution/execution.c
-int execute_command_list(CommandList *cmd_list, t_context *ctx, t_shell *shell); // added t_shell proto
-int execute_single_command(Command *cmd, t_context *ctx, t_shell *shell);
+int execute_command_list(CommandList *cmd_list, t_shell *shell); // added t_shell proto
+int execute_single_command(Command *cmd, t_shell *shell);
 
 // src/builtins/builtin.c
 int is_builtin(const char *cmd);
-int exec_builtin(Command *cmd, t_context *ctx, t_shell *shell); // added t_shell proto
+int exec_builtin(Command *cmd, t_shell *shell); // added t_shell proto
 
 // src/builtins/builtin_utils.c
-int		update_env(t_context *ctx, const char *var);
-void	remove_env(t_context *ctx, const char *name);
+int		update_env(t_shell *shell, const char *var);
+void	remove_env(t_shell *shell, const char *name);
 int		is_numeric(const char *str);
 int		is_valid_identifier(const char *str);
 char    *get_env_value(char **env, const char *name);
 
 // src/execution/external.c
-char	*get_command_path(const char *cmd, t_context *ctx);
-int		exec_external(Command *cmd, t_context *ctx);
+char	*get_command_path(const char *cmd, t_shell *shell);
+int		exec_external(Command *cmd, t_shell *shell);
 
 // src/execution/external_utils.c
 char	*ft_strtok(char *str, const char *delim);
 
 // src/execution/utils.c
-void	setup_fds(Command *cmd, t_context *ctx);
+void	setup_fds(Command *cmd, t_shell *shell);
 
 // src/main/main.c
 void process_input(char *line, t_shell *shell);

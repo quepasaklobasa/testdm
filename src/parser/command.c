@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: airupert <airupert@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 13:20:17 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/22 20:17:48 by airupert         ###   ########.fr       */
+/*   Updated: 2025/08/06 21:13:48 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,9 @@ Command *parse_command_init(void)
 }
 
 // Process command arguments
-Command *parse_command_args(Command *cmd, int *arg_count, t_context *ctx)
+Command *parse_command_args(Command *cmd, int *arg_count, t_shell *shell)
 {
-    cmd->args = parse_args(arg_count, ctx);
+    cmd->args = parse_args(arg_count, shell);
     if (!cmd->args)
     {
         free_command(cmd);
@@ -84,14 +84,14 @@ Command *parse_command_args(Command *cmd, int *arg_count, t_context *ctx)
 }
 
 // Parse a single command
-Command *parse_command(t_context *ctx)
+Command *parse_command(t_shell *shell)
 {
     Command *cmd;
     int arg_count;
     cmd = parse_command_init();
     if (!cmd)
         return (NULL);
-    cmd = parse_command_args(cmd, &arg_count, ctx);
+    cmd = parse_command_args(cmd, &arg_count, shell);
     if (!cmd)
         return (NULL);
     while (g_current_token && (g_current_token->token.type == TOKEN_REDIRECT_IN ||

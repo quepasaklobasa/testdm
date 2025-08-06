@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/27 13:36:54 by airupert          #+#    #+#             */
-/*   Updated: 2025/08/04 20:59:11 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/06 21:10:31 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ int	is_numeric(const char *str)
 }
 
 // Update or add an enviornment variable
-int	update_env(t_context *ctx, const char *var)
+int	update_env(t_shell *shell, const char *var)
 {
 	char	*name_end;
 	char	*name;
@@ -55,7 +55,7 @@ int	update_env(t_context *ctx, const char *var)
 	int		env_count;
 	char	**new_env;
 
-	if (!ctx || !var || !ctx->env)
+	if (!shell || !var || !shell->env)
 		return (0);
 	name_end = ft_strchr(var, '=');
 	if (!name_end || name_end == var)
@@ -65,14 +65,14 @@ int	update_env(t_context *ctx, const char *var)
 	if (!name)
 		return (0);
 	i = 0;
-	while (ctx->env[i])
+	while (shell->env[i])
 	{
-		if (ft_strncmp(ctx->env[i], name, name_len) == 0 && ctx->env[i][name_len] == '=')
+		if (ft_strncmp(shell->env[i], name, name_len) == 0 && shell->env[i][name_len] == '=')
 		{
-			free(ctx->env[i]);
-			ctx->env[i] = ft_strdup(var);
+			free(shell->env[i]);
+			shell->env[i] = ft_strdup(var);
 			free(name);
-			if (!ctx->env[i])
+			if (!shell->env[i])
 				return(0);
 			return (1);
 		}
@@ -83,12 +83,12 @@ int	update_env(t_context *ctx, const char *var)
 	new_env = ft_calloc(env_count + 2, sizeof(char *));
 	if (!new_env)
 		return (free(name), 0);
-	while (ctx->env[env_count])
+	while (shell->env[env_count])
 		env_count++;
 	i = 0;
 	while (i < env_count)
 	{
-		new_env[i] = ft_strdup(ctx->env[i]);
+		new_env[i] = ft_strdup(shell->env[i]);
 		if (!new_env[i])
 		{
 			free_env_array(new_env);
@@ -104,8 +104,8 @@ int	update_env(t_context *ctx, const char *var)
 		free(name);
 		return (0);
 	}
-	free_env_array(ctx->env);
-	ctx->env = new_env;
+	free_env_array(shell->env);
+	shell->env = new_env;
 	free(name);
 	return (1);
 }
@@ -130,19 +130,19 @@ int 	is_valid_identifier(const char *str)
 }
 
 // remove an enviornment variable
-void	remove_env(t_context *ctx, const char *name)
+void	remove_env(t_shell *shell, const char *name)
 {
 	int	i;
 	int found = -1;
 	size_t name_len;
-	
-	if (!name || !*name || !ctx || !ctx->env)
+
+	if (!name || !*name || !shell || !shell->env)
 		return ;
 	name_len = ft_strlen(name);
 	i = 0;
-	while (ctx->env[i])
+	while (shell->env[i])
 	{
-		if (ft_strncmp(ctx->env[i], name, name_len) == 0 && (ctx->env[i][name_len] == '=' || ctx->env[i][name_len] == '\0'))
+		if (ft_strncmp(shell->env[i], name, name_len) == 0 && (shell->env[i][name_len] == '=' || shell->env[i][name_len] == '\0'))
 		{
 			found = i;
 			break;
@@ -151,13 +151,13 @@ void	remove_env(t_context *ctx, const char *name)
 	}
 	if (found == -1)
 		return ; // variable not found, no error
-	free(ctx->env[found]);
-	while (ctx->env[found + 1])
+	free(shell->env[found]);
+	while (shell->env[found + 1])
 	{
-		ctx->env[found] = ctx->env[found + 1];
+		shell->env[found] = shell->env[found + 1];
 		found++;
 	}
-	ctx->env[found] = NULL;
+	shell->env[found] = NULL;
 }
 
 // helper to retrieve the value of an env variable

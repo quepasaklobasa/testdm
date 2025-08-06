@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/16 13:19:50 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/31 20:38:32 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/06 21:12:52 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ char **parse_args_alloc(int *arg_count)
 }
 
 // Process arguments into array
-char **parse_args_process(char **args, int *arg_count, t_context *ctx)
+char **parse_args_process(char **args, int *arg_count, t_shell *shell)
 {
     int		i;
     char	*value;
@@ -104,7 +104,7 @@ char **parse_args_process(char **args, int *arg_count, t_context *ctx)
 			{
 				if (ft_strcmp(g_current_token->token.value, "$?" ) == 0)
 				{
-					args[i] = ft_itoa(ctx->exit_status);
+					args[i] = ft_itoa(shell->exit_status);
 					if (!args[i])
 					{
 						while(i > 0)
@@ -118,7 +118,7 @@ char **parse_args_process(char **args, int *arg_count, t_context *ctx)
 				}
 				else
 				{
-					value = get_env_value(ctx->env, g_current_token->token.value + 1);
+					value = get_env_value(shell->env, g_current_token->token.value + 1);
 					args[i] = ft_strdup(value ? value : "");
 					if (!args[i])
 					{
@@ -158,14 +158,14 @@ char **parse_args_process(char **args, int *arg_count, t_context *ctx)
 }
 
 // Parse arguments
-char **parse_args(int *arg_count, t_context *ctx)
+char **parse_args(int *arg_count, t_shell *shell)
 {
     char **args;
     *arg_count = 0;
     args = parse_args_alloc(arg_count);
     if (!args)
         return (NULL);
-    args = parse_args_process(args, arg_count, ctx);
+    args = parse_args_process(args, arg_count, shell);
     return (args);
 }
 
