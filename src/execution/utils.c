@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:34:39 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/06 21:03:22 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/09 23:01:05 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,6 @@ static int	handle_heredoc(Command *cmd, t_shell *shell)
 	while (1)
 	{
 		line = readline("> ");
-		// rl_on_new_line(); // may not need?
-		// rl_redisplay(); // also may not need
 		if (!line) // ctrl + D (EOF)
 		{
 			write(STDERR_FILENO, "minishell: warning: heredoc delimited by EOF\n", 45);
@@ -144,10 +142,11 @@ void setup_fds(Command *cmd, t_shell *shell)
 			shell->exit_status = 1;
 			return ;
 		}
-		close(cmd->in_fd);
-		cmd->in_fd = STDIN_FILENO;
+		if (cmd->in_fd != STDIN_FILENO)
+            close(cmd->in_fd);
+        cmd->in_fd = STDIN_FILENO;
 	}
-	if (cmd->out_fd != STDOUT_FILENO)
+	if (cmd->out_fd != STDOUT_FILENO || cmd->redirect_out || cmd->redirect_append)
 	{
 		if (dup2(cmd->out_fd, STDOUT_FILENO) == -1)
 		{
@@ -155,7 +154,8 @@ void setup_fds(Command *cmd, t_shell *shell)
 			shell->exit_status = 1;
 			return ;
 		}
-		close(cmd->out_fd);
-		cmd->out_fd = STDOUT_FILENO;
+		if (cmd->out_fd != STDOUT_FILENO)
+            close(cmd->out_fd);
+        cmd->out_fd = STDOUT_FILENO;
 	}
 }

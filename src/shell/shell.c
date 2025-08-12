@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 14:25:06 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/06 20:53:22 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/08 19:38:28 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,6 @@ void handle_sigquit(int sig)
 int init_shell(t_shell *shell, char **envp)
 {
     int i;
-    char cwd[1024];
-    char *oldpwd_str;
 
     shell->exit_flag = 0;
     shell->exit_status = 0;
@@ -41,27 +39,11 @@ int init_shell(t_shell *shell, char **envp)
     i = 0;
     while (envp[i])
         i++;
-    shell->env = ft_calloc(i + 2, sizeof(char *));
+    shell->env = ft_calloc(i + 1, sizeof(char *));
     if (!shell->env)
         return (-1);
     if (copy_env(shell, envp, i) != 0)
         return (-1);
-    if (getcwd(cwd, sizeof(cwd)))
-    {
-        oldpwd_str = ft_strjoin("OLDPWD=", cwd);
-        if (oldpwd_str)
-        {
-            shell->env[i] = ft_strdup(oldpwd_str);
-            free(oldpwd_str);
-            if (!shell->env[i])
-            {
-                cleanup_shell(shell);
-                return (-1);
-            }
-            i++;
-            shell->env[i] = NULL;
-        }
-    } 
     signal(SIGINT, handle_sigint);
     signal(SIGQUIT, handle_sigquit);
     return (0);

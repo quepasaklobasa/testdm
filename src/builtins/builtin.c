@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:34:10 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/06 20:38:14 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/09 23:12:46 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,29 +42,34 @@ static int	cmd_exit(Command *cmd, t_shell *shell)
 	return (shell->exit_status);
 }
 
-static int	cmd_env(Command *cmd, t_shell *shell)
+static int cmd_env(Command *cmd, t_shell *shell)
 {
-	int	i;
+    int i;
 
-	if (!shell || !shell->env)
-	{
-		write(STDERR_FILENO, "minishell: env: invalid identifier\n", 31);
-		return ((shell->exit_status = 1), 1);
-	}
-	if (cmd->args[1])
-	{
-		write(STDERR_FILENO, "minishell: env: no options or arguments allowed\n", 48);
-		return ((shell->exit_status = 1), 1);
-	}
-	i = 0;
-	while (shell->env[i])
-	{
-		write(cmd->out_fd, shell->env[i], ft_strlen(shell->env[i]));
-		write(cmd->out_fd, "\n", 1);
-		i++;
-	}
-	shell->exit_status = 0;
-	return (0);
+    if (!shell || !shell->env)
+    {
+        write(STDERR_FILENO, "minishell: env: invalid identifier\n", 31);
+        shell->exit_status = 1;
+        return (1);
+    }
+    if (cmd->args[1])
+    {
+        write(STDERR_FILENO, "minishell: env: no options or arguments allowed\n", 48);
+        shell->exit_status = 1;
+        return (1);
+    }
+    printf("DEBUG: cmd_env shell->env:\n");
+    for (i = 0; shell->env[i]; i++)
+        printf("  [%d]: %s\n", i, shell->env[i]);
+    i = 0;
+    while (shell->env[i])
+    {
+        write(cmd->out_fd, shell->env[i], ft_strlen(shell->env[i]));
+        write(cmd->out_fd, "\n", 1);
+        i++;
+    }
+    shell->exit_status = 0;
+    return (0);
 }
 
 static int	cmd_unset(Command *cmd, t_shell *shell)

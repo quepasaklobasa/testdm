@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:32 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/06 21:15:52 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/08 19:16:09 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,9 +84,6 @@ void process_input(char *line, t_shell *shell)
 		shell->exit_status = 2; //patches segfault on unclosed quotes
 		return;
     }
-    printf("DEBUG: shell->env before parsing:\n");
-    for (int i = 0; shell->env[i]; i++)
-        printf("  [%d]: %s\n", i, shell->env[i]);
     printf("Tokens:\n");
     print_tokens(tokens);
     cmd_list = parse_program(tokens, shell);
@@ -94,9 +91,6 @@ void process_input(char *line, t_shell *shell)
     {
         print_command_list(cmd_list);
         execute_command_list(cmd_list, shell);
-		printf("DEBUG: shell->env after command:\n");
-        for (int i = 0; shell->env[i]; i++)
-            printf("  [%d]: %s\n", i, shell->env[i]);
         free_command_list(cmd_list);
     }
 	else
