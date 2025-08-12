@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 19:33:29 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/06 21:08:14 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/12 10:05:52 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ int execute_command_list(CommandList *cmd_list, t_shell *shell)
 				return (1);
 			}
 			// for now just print pipefd values to verify creation (for debug)
+            current->cmd->out_fd = shell->pipefd[1];
 			printf("DEBUG: Pipe created, read fd=%d, write fd=%d\n", shell->pipefd[0], shell->pipefd[1]);
 			stdout_save = dup(STDOUT_FILENO); // Save stdout for later restoration
 			if (stdout_save == -1)

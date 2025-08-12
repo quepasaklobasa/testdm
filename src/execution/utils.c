@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:34:39 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/09 23:01:05 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/12 10:15:04 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ static int	handle_heredoc(Command *cmd, t_shell *shell)
 		return (-1);
 	}
 	delim_len = ft_strlen(cmd->heredoc_delim);
-	// red input until delimiter is found
 	while (1)
 	{
 		line = readline("> ");

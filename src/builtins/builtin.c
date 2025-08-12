@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:34:10 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/09 23:12:46 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/12 10:12:32 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,9 +58,6 @@ static int cmd_env(Command *cmd, t_shell *shell)
         shell->exit_status = 1;
         return (1);
     }
-    printf("DEBUG: cmd_env shell->env:\n");
-    for (i = 0; shell->env[i]; i++)
-        printf("  [%d]: %s\n", i, shell->env[i]);
     i = 0;
     while (shell->env[i])
     {
