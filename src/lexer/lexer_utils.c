@@ -6,12 +6,29 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 15:16:58 by jcouto            #+#    #+#             */
-/*   Updated: 2025/07/28 19:09:55 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/13 22:50:42 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../inc/minishell.h"
 
+TokenNode *create_token(TokenType type, char *value)
+{
+    TokenNode *new_node;
+    
+    new_node = malloc(sizeof(TokenNode));
+    if (!new_node)
+    {
+        write(STDERR_FILENO, "minishell: malloc: cannot allocate memory\n", 41);
+        if (value)
+            free(value);
+        return (NULL);
+    }
+    new_node->token.type = type;
+    new_node->token.value = value;
+    new_node->next = NULL;
+    return (new_node);
+}
 // Free token linked list
 void free_tokens(TokenNode *tokens)
 {

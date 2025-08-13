@@ -6,7 +6,7 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:28 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/12 10:56:47 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/13 22:56:34 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,12 @@
 
 extern volatile sig_atomic_t g_signal; // Global var for sighandling
 
-//Structure to hold shell state
 typedef struct s_shell {
-    char    **env;
-	int		exit_status;
-    volatile sig_atomic_t exit_flag;
-    int     pipefd[2];
-    int     prev_fd;
+    char **env;                  // Environment variables
+    int exit_status;             // Last command exit status
+    volatile sig_atomic_t exit_flag; // Flag for shell exit
+    int pipefd[2];               // Pipe file descriptors for pipelines
+    int prev_fd;                 // Previous pipe read end
 } t_shell;
 
 typedef enum { //Token types for lexer
@@ -111,6 +110,7 @@ TokenNode *lexer_variable(char *input, int *i, int *count, TokenNode *tokens);
 // src/lexer/lexer_utils.c
 void free_tokens(TokenNode *tokens);
 TokenNode *append_token(TokenNode *tokens, Token token);
+TokenNode *create_token(TokenType type, char *value);
 
 // src/parser/parser.c
 int consume(TokenType type);
