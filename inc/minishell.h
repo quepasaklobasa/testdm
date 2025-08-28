@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
+/*   By: airupert <airupert@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/02 17:28:28 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/13 22:56:34 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/19 19:46:02 by airupert         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,12 +148,17 @@ int		is_numeric(const char *str);
 int		is_valid_identifier(const char *str);
 char    *get_env_value(char **env, const char *name);
 
+// src/execution/execution.c
+int execute_pipeline(CommandList *cmd_list, t_shell *shell);
+
 // src/execution/external.c
-char	*get_command_path(const char *cmd, t_shell *shell);
-int		exec_external(Command *cmd, t_shell *shell);
+int get_command_path(const char *cmd, t_shell *shell, char *path, size_t path_size);
+int exec_external(Command *cmd, t_shell *shell);
 
 // src/execution/external_utils.c
 char	*ft_strtok(char *str, const char *delim);
+char	*find_executable(const char *cmd, char **env);
+int		execute_external(Command *cmd, t_shell *shell);
 
 // src/execution/utils.c
 void	setup_fds(Command *cmd, t_shell *shell);

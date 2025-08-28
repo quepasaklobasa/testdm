@@ -6,98 +6,166 @@
 /*   By: jcouto <jcouto@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:36:08 by jcouto            #+#    #+#             */
-/*   Updated: 2025/08/06 20:56:11 by jcouto           ###   ########.fr       */
+/*   Updated: 2025/08/28 18:28:35 by jcouto           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../inc/minishell.h"
 
 // Get path for external command
-char *get_command_path(const char *cmd, t_shell *shell)
+int get_command_path(const char *cmd, t_shell *shell, char *path, size_t path_size)
 {
-    char	*path;
-	char	*paths;
-	char	*full_path;
-	char	*path_env;
-	char	*dir;
-
-	if (!cmd)
+	char *path_env;
+	size_t dir_len;
+	size_t cmd_len;
+	size_t i;
+	size_t start;
+	int j;
+	
+	if (!cmd || !path || path_size < 2)
 	{
-		write(2, "minishell: get_command_path: null command\n", 41);
-		return (NULL);
+		write(STDERR_FILENO, "minishell: get_command_path: invalid input\n", 43);
+		return (0);
 	}
-	if (access(cmd, X_OK) == 0)
-		return (ft_strdup(cmd));
+	
+	path[0] = '\0';
+	cmd_len = ft_strlen(cmd);
+	
+	// If cmd contains '/' or is absolute path, check directly
+	if (ft_strchr(cmd, '/') || access(cmd, X_OK) == 0)
+	{
+		if (cmd_len >= path_size)
+		{
+			write(STDERR_FILENO, "minishell: get_command_path: path too long\n", 44);
+			return (0);
+		}
+		ft_strlcpy(path, cmd, path_size);
+		return (1);
+	}
+	
 	path_env = get_env_value(shell->env, "PATH");
 	if (!path_env)
 	{
-		// fallback to /bin/ if PATH is unset
-		full_path = ft_strjoin("/bin/", cmd);
-		if (!full_path)
+		const char *fallback_dirs[] = {"/bin/", "/usr/bin/", "/usr/local/bin/", NULL};
+		j = 0;
+		while (fallback_dirs[j] != NULL)
 		{
-			write(2, "minishell: malloc: cannot allocate memory\n", 41);
-			return (NULL);
+			size_t fallback_len = ft_strlen(fallback_dirs[j]);
+			// Check: dir_len + cmd_len + null terminator
+			if (fallback_len + cmd_len + 1 > path_size)
+			{
+				write(STDERR_FILENO, "minishell: get_command_path: path too long\n", 44);
+				return (0);
+			}
+			ft_strlcpy(path, fallback_dirs[j], path_size);
+			ft_strlcat(path, cmd, path_size);
+			if (access(path, X_OK) == 0)
+				return (1);
+			path[0] = '\0';
+			j++;
 		}
-		if (access(full_path, X_OK) == 0)
-			return (full_path);
-		free(full_path);
-		return (NULL);
+		return (0);
 	}
-	paths = ft_strdup(path_env);
-	if (!paths)
+	
+	i = 0;
+	start = 0;
+	
+	while (path_env[i] != '\0')
 	{
-		write(2, "minishell: malloc: cannot allocate memory\n", 41);
-		return(NULL);
-	}
-	dir = ft_strtok(paths, ":");
-	while (dir)
-	{
-		full_path = ft_strjoin(dir, "/");
-		path = ft_strjoin(full_path, cmd);
-		free(full_path);
-		if (!path)
+		if (path_env[i] == ':' || path_env[i + 1] == '\0')
 		{
-			free(paths);
-			write(2, "minshell: malloc: cannot allocate memory\n", 41);
-			return (NULL);
+			// Handle last directory correctly
+			if (path_env[i + 1] == '\0' && path_env[i] != ':')
+				dir_len = i + 1 - start;
+			else
+				dir_len = i - start;
+			
+			// Skip empty directories
+			if (dir_len == 0)
+			{
+				start = i + 1;
+				i++;
+				continue;
+			}
+			// Check: dir_len + "/" + cmd_len + null terminator
+			if (dir_len + 1 + cmd_len + 1 > path_size)
+			{
+				write(STDERR_FILENO, "minishell: get_command_path: path too long\n", 44);
+				return (0);
+			}
+			// Copy directory path
+			ft_strlcpy(path, path_env + start, dir_len + 1);
+			// Add slash if directory doesn't end with one
+			if (dir_len > 0 && path[dir_len - 1] != '/')
+			{
+				path[dir_len] = '/';
+				path[dir_len + 1] = '\0';
+			}
+			ft_strlcat(path, cmd, path_size);
+			if (access(path, X_OK) == 0)
+				return (1);
+			start = i + 1;
+			path[0] = '\0';
 		}
-		if(access(path, X_OK) == 0)
-		{
-			free(paths);
-			return (path);
-		}
-		free(path);
-		dir = ft_strtok(NULL, ":");
+		i++;
 	}
-	free(paths);
-	return (NULL);
+	
+	return (0);
 }
 
 // Execute external command
 int exec_external(Command *cmd, t_shell *shell)
 {
-    char *path;
+	pid_t pid;
+	int status;
+	char path[1024];
 
 	if (!cmd || !cmd->cmd || !cmd->args)
 	{
 		write(STDERR_FILENO, "minishell: exec_external: invalid command\n", 41);
 		shell->exit_status = 1;
-		return (1);
+		return 1;
 	}
-    path = get_command_path(cmd->cmd, shell);
-    if (!path)
-    {
+	
+	if (!get_command_path(cmd->cmd, shell, path, sizeof(path)))
+	{
 		write(STDERR_FILENO, "minishell: command not found: ", 30);
 		write(STDERR_FILENO, cmd->cmd, ft_strlen(cmd->cmd));
 		write(STDERR_FILENO, "\n", 1);
-        shell->exit_status = 127;
-        return (127);
-    }
-	execve(path, cmd->args, shell->env);
-	write(STDERR_FILENO, "minishell: command not found: ", 30);
-	write(STDERR_FILENO, cmd->cmd, ft_strlen(cmd->cmd));
-	write(STDERR_FILENO, "\n", 1);
-    free(path);
-    shell->exit_status = 127;
-	return (127);
+		shell->exit_status = 127;
+		return 127;
+	}
+	
+	pid = fork();
+	if (pid == -1)
+	{
+		write(STDERR_FILENO, "minishell: fork error\n", 22);
+		shell->exit_status = 1;
+		return 1;
+	}
+	
+	if (pid == 0)
+	{
+		setup_fds(cmd, shell);
+		execve(path, cmd->args, shell->env);
+		write(STDERR_FILENO, "minishell: execve failed: ", 26);
+		write(STDERR_FILENO, cmd->cmd, ft_strlen(cmd->cmd));
+		write(STDERR_FILENO, "\n", 1);
+		exit(127);
+	}
+	
+	waitpid(pid, &status, 0);
+	
+	if (WIFEXITED(status))
+	{
+		shell->exit_status = WEXITSTATUS(status);
+		return shell->exit_status;
+	}
+	if (WIFSIGNALED(status))
+	{
+		shell->exit_status = 128 + WTERMSIG(status);
+		return shell->exit_status;
+	}
+	shell->exit_status = 1;
+	return 1;
 }
